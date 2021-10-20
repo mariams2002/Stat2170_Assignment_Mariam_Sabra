@@ -1,0 +1,157 @@
+---
+title: "Assignment-Mariam_Mohamed_Sabra_46429069_."
+author: "Mariam Sabra"
+date: "15/10/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Read in Data
+```{r}
+paramo <- read.csv("~/Downloads/paramo.dat", sep="")
+head(paramo)
+```
+
+#### Question 1
+##### A)
+```{r}
+pairs(paramo, panel = panel.smooth)
+```
+There seems to be a strong relationship between AR (the area of the island in square km) and EL (Elevation in thousands of metres), not so much with other variables.
+```{r}
+cor(paramo)
+```
+An abundance of birds seems to be strongly correlated between AR (the area of the island in square km) and EL (Elevation in thousands of metres),weakly correlated with other variables.The other predictor variables have quite weak correlations with each other (almost all less than 0.5).
+
+##### B)
+We fit the regression model we have:
+Y = B0 + B1X1 + B2X2 +B3X3 + B4X4 + B5X5 + E
+$$
+\epsilon \sim N(0,\sigma^2)
+$$
+where:
+- Y: Abundance of birds
+- X1: Number of species of bird present
+- X2: Area of the island in square km
+- X3: Elevation in thousands of metres
+- X4: Distance from Ecuador in kilometres
+- X5: Distance to the nearest other island in kilometre
+- E: Unexplained variation
+
+For the Overall ANOVA test for multiple regression we are testing that 
+H0 : B2 = B3 = B4 = B5 = 0 against 
+H1 : where at least one of the coefficient is not equal to zero
+
+To compute SS:
+```{r}
+model1 = lm(DNI~N +AR +EL+DEc, data=paramo)
+anova(model1)
+```
+Overall ANOVA table:
+
+Source ______d.f._____Sum Sq_______Mean Square____F                                
+Regression____4________1413.6__________353.4____0.4279                           
+Residual______9__________7432.8__________825.87_________                                    
+Total_______13_________8846.4_________________________                                                       
+– The Null distribution for the test statistic is a F (4,9)                     
+- The P-Value is given by P(F4,9 >= 0.4279) =  0.7853
+- Since p-value: 0.7853 >=  (0.05), we accept the H0.
+
+##### C)
+Residual normality
+linear regression assumes normality for residual errors. Shapiro Wilk p-value equals 0.277100. It is assumed that the data is normally distributed.           
+
+Homoscedasticity - homogeneity of variance
+The White test p-value equals 0.0000785776 (F=25.167049). It is assumed that the variance is not homogeneous.
+The coefficients' estimators are unbiased but inefficient estimators with large inaccurate standard errors,hence the statistical tests over the model and the coefficients are not accurate. You may try the following:
+a. Ensure you are not missing a predictor that caused the Homoscedasticity
+b. Try using data transformation to fix the Homoscedasticity
+c. Use Weighted regression                                                        
+
+Multicollinearity - intercorrelations among the predictors (Xi)
+There is a low multicollinearity concern as some of the VIF values are bigger than 2.5.
+The multicollinearity may influence the coefficients or the ability to choose the predictors, but not the dependent variable (Y).There is no clear cut what is the VIF threshold, you should start being concerned for value above 2.5. A value above 5 or 10 is probably not acceptable.
+
+You may consider removing N   from the model unless the high multicollinearity cause is:
+1. Predictor combination (Like X1X2 or X12.)
+2. Control variable, but the non-control variables do not have high multicollinearity.
+3. Dummy variable with more than two categories, when the reference category's proportion is small (the category that doesn't get a dummy variable).
+
+
+Priori power - of the entire model (4 predictors)
+The priori power should be calculated before running the regression.
+The power is low: 0.1268, hence with a larger sample size the regression model may become significant.
+The power to prove each predictor significance is always lower than the power of the entire model
+
+
+##### D)
+Y and X relationship
+R square (R2) equals 0.159789. It means that the predictors (Xi) explain 16.0% of the variance of Y.
+                                                                                                          
+##### E)
+since all predictors are significant we wil create a fitted regression model:
+```{r}
+  summary(model1)$coef
+```
+Model = 4.379156 + 0.30479256 N + 5.05089782 AR - 2.80805413 EL + 0.03056116 DEc                                   
+##### F)                                                                                                           
+Adjusted R square equals -0.213638.
+The coefficient of multiple correlation (R) equals 0.399736. It means that there is a weak direct relationship between the predicted data (ŷ) and the observed data (y). a lower adjusted R-squared indicates that the additional input variables are not adding value to the model.
+
+#### Question 2 
+##Read in Data
+```{r}
+HR <- read.csv("~/Downloads/TreeShrews.dat", sep = "")
+head(HR)
+```
+##### A)                                                                                                                             
+To find out if the study is balanced we check to see if the same number of replicates across all level factors in the study.
+```{r}
+table(HR[, c("Shrews", "Sleep")])
+```
+The design is balanced, since there is an equal number of replicates.                                         
+B)                                        
+```{r}
+ HR.aov = lm(HeartRates ~ factor(Sleep)* Shrews, data = HR)
+par(mfrow = c(1, 2))
+qqnorm(HR.aov$residuals)
+boxplot(HeartRates ~Sleep, data=HR)
+
+```
+The boxes appear to be equally sized with LSWS stage having  the greatest range of heart rates, all seem to have similar means.
+The Normal Q-Q plot of residuals has a strong linear trend implying that the residuals are close to normally
+distributed.
+Therefore the assumptions required for ANOVA seem satisfied.                                                   
+C)
+
+A two-way ANOVA is designed to assess the interrelationship of two independent variables on a dependent variable. A one-way ANOVA only involves one factor or independent variable, whereas there are two independent variables in a two-way ANOVA. We have too few variables to complete a two way anova.
+##### D)                                                                                                                            
+We fit the model Yij= "mu"i + Eij
+$$
+\epsilon \sim N(0,\sigma^2)
+$$
+where "mu"i is the effect of different sleeping stages on the heart rate of shrews
+- Hypotheses: H0 : "mu"1 = "mu"2 = "mu"3 = "mu"4...; H1 : not all means are equal.
+
+```{r}
+
+anova(HR.aov)
+```
+##### E)
+```{r}
+summary(HR.aov)
+```
+Since the P-Value is less than the significance level of 0.05 (5%) we have evidence to
+reject H0 in favour of H1. That is, we have evidence that the heart rate  is not all the same for the
+different sleep stages.
+
+
+
+
+
+
+
+
